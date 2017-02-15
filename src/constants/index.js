@@ -7,3 +7,11 @@ export const LOGIN_USER_ERROR = 'App/LOGIN_USER_ERROR';
 
 export const LOGOUT_USER = 'App/LOGOUT_USER';
 export const FORM_RESET = 'redux-form/RESET';
+
+export const SCANNER_LOAD_INFO_PENDING = 'App/Scanner/LOAD_CLIENT_INFO_PENDING';
+export const SCANNER_LOAD_INFO_SUCCESS = 'App/Scanner/SCANNER_LOAD_INFO_SUCCESS';
+export const SCANNER_LOAD_INFO_ERROR = 'App/Scanner/SCANNER_LOAD_INFO_ERROR';
+
+export const SCANNER_PRINT_CLIENT = 'App/Scanner/PRINT_CLIENT_INFO';
+
+

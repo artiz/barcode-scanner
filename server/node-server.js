@@ -64,6 +64,20 @@ app.post('/api/auth/login',
   }
 );
 
+// TODO: move to separate module
+app.get('/api/client/find',
+  passport.authenticate('local'),
+  (req, res) => {
+    let client = {
+      phone: req.query.phone,
+      name: 'Max Pain'
+    }
+    res.status(200).send(JSON.stringify(client));
+  }
+);
+
+
+
 // API proxy logic: if you need to talk to a remote server from your client-side
 // app you can proxy it though here by editing ./proxy-config.js
 nodeProxy(app);

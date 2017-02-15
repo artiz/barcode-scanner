@@ -43,7 +43,10 @@ function App({ children, session, login, logout }) {
           <Logo />
         </NavigatorItem>
         <NavigatorItem isVisible={ isLoggedIn } mr>
-          <Link to="/">Counter</Link>
+          <Link to="/">Scanner</Link>
+        </NavigatorItem>
+        <NavigatorItem isVisible={ isLoggedIn } mr>
+          <Link to="/counter">Counter</Link>
         </NavigatorItem>
         <NavigatorItem isVisible={ isLoggedIn }>
           <Link to="/about">About Us</Link>
