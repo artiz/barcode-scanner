@@ -14,8 +14,8 @@
     "dev:client": "cross-env NODE_ENV=development webpack-dev-server -d --inline --hot --progress --no-info",
     "dev": "concurrently -r \"npm run dev:client\" \"npm run dev:server\"",
     "lint": "npm run lint-js && npm run lint-css",
-    "lint-css": "stylelint './src/**/*.css'",
-    "lint-js": "eslint '**/*.js' --ignore-path .gitignore",
+    "lint-css": "stylelint \"./src/**/*.css\"",
+    "lint-js": "eslint \"**/*.js\" --ignore-path .gitignore",
     "postinstall": "npm run build",
     "start": "cross-env NODE_ENV=production node --use_strict server/node-server.js",
     "pretest": "npm run clean coverage/ && npm run lint",
@@ -105,6 +105,8 @@
     "whatwg-fetch": "^1.0.0"
   },
   "dependencies": {
+    "basscss-base-forms": "^2.0.2",
+    "basscss-color-forms": "^3.0.2",
     "express": "^4.13.3",
     "helmet": "^2.0.0",
     "http-proxy": "^1.12.1",

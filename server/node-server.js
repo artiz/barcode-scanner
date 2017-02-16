@@ -66,7 +66,6 @@ app.post('/api/auth/login',
 
 // TODO: move to separate module
 app.get('/api/client/find',
-  passport.authenticate('local'),
   (req, res) => {
     let client = {
       phone: req.query.phone,

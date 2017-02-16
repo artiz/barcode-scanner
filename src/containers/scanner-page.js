@@ -1,59 +1,162 @@
 import React from 'react';
 import Button from '../components/button';
-import FormGroup from '../components/form/group';
-import FormLabel from '../components/form/label';
+// import FormGroup from '../components/form/group';
+// import FormLabel from '../components/form/label';
 // import FormError from '../components/form/error';
-import Input from '../components/form/input/';
-
+// import Input from '../components/form/input/';
 import { connect } from 'react-redux';
 
-import { loadInfo, print } from '../actions/scanner';
+import { loadClient, printInfo, storePhone } from '../actions/scanner';
 
 import Container from '../components/container';
 
 function mapStateToProps(state) {
+  const local = state.scanner;
   return {
-    contactInfo: state.scanner.get('contactInfo'),
-    fields: {},
+    contact: local.get('contact') ? local.get('contact').toJSON() : null,
+    requestInProgress: local.get('pending'),
+    phone: local.get('phone'),
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    loadInfo: () => dispatch(loadInfo()),
-    print: () => dispatch(print()),
+    load: () => dispatch(loadClient()),
+    printContact: () => dispatch(printInfo()),
   };
 }
 
-function ScannerPage({
-    contactInfo,
-  }) {
-  return (
-    <Container testid="scanner" size={2} center>
-      <h2 data-testid="scanner-heading" className="center" id="qa-counter-heading">Scanner</h2>
+class ScannerPage extends React.Component {
+  static contextTypes = {
+    store: React.PropTypes.object.isRequired,
+  }
 
-      <FormGroup>
-        <FormLabel>Phone</FormLabel>
-        <Input type="text" id="qa-phone-input"/>
-      </FormGroup>
+  constructor(props) {
+    super(props);
+    this.onPhoneKeyPress = this.onPhoneKeyPress.bind(this);
+    this.onPhoneChange = this.onPhoneChange.bind(this);
+    this.onWindowKeyPress = this.onWindowKeyPress.bind(this);
+    this.isDomAvailable = typeof(window) !== 'undefined';
+  }
 
-      <h3>Contact info</h3>
-      { contactInfo }
+  componentDidMount() {
+    this.dispatch = this.context.store.dispatch;
+    this.phoneInput.focus();
 
-      <Button data-ref="print" className="col-2" onClick={ print }>
-        Print client info
-      </Button>
+    if (this.isDomAvailable) {
+      window.addEventListener('keypress', this.onWindowKeyPress);
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.isDomAvailable) {
+      window.removeEventListener('keypress', this.onWindowKeyPress);
+    }
+  }
+
+  onWindowKeyPress(evt) {
+    // Got here: http://www.deadosaurus.com/detect-a-usb-barcode-scanner-with-javascript/
+    // check the keys pressed are numbers
+    if (evt.which >= 48 && evt.which <= 57) {
+      // if a number is pressed we add it to the chars array
+      this.barcodeChars.push(String.fromCharCode(evt.which));
+    }
+    // console.log('onWindowKeyPress:', evt.which);
+
+    if (this.barcodeLoad === false) {
+      setTimeout(() => {
+        // check we have a long length e.g. it is a barcode
+        if (this.barcodeChars.length >= 10) {
+          const barcode = this.barcodeChars.join('').trim();
+          // console.log('Barcode:', barcode);
+          this.dispatch(storePhone(barcode));
+          this.dispatch(loadClient());
+        }
+
+        this.barcodeChars = [];
+        this.barcodeLoad = false;
+      }, 500);
+    }
+
+    this.barcodeLoad = true;
+  }
 
 
-    </Container>
-  );
+  onPhoneKeyPress(evt) {
+    if (evt.key === 'Enter') {
+      this.dispatch(loadClient());
+    }
+  }
+
+  onPhoneChange() {
+    this.dispatch(storePhone(this.phoneInput.value));
+  }
+
+  render() {
+    const { contact,
+      phone,
+      requestInProgress,
+      load,
+      printContact } = this.props;
+
+    let contactInfo = null;
+    if (contact) {
+      contactInfo = (
+        <div className="p2 print-area">
+          <p>Name: { contact.name  }</p>
+          <p>Phone: { contact.phone }</p>
+          <br/>
+          <Button data-ref="print" className="col-2" onClick={ printContact }>Print</Button>
+        </div>
+      );
+    }
+
+    return (
+      <Container testid="scanner" size={3} center>
+        <h2 data-testid="scanner-heading" className="center" id="qa-counter-heading">Scanner</h2>
+
+        <div className="overflow-hidden border rounded">
+          <div className="p1 bold white bg-blue">
+            Search
+          </div>
+          <div className="p1">
+            <input
+              type="text"
+              className="field col-6"
+              ref={(input) => { this.phoneInput = input; }}
+              onKeyPress = { this.onPhoneKeyPress }
+              onChange = { this.onPhoneChange }
+              placeholder="Enter phone number"
+              value={ phone }
+            />
+            <button data-ref="load-info" className="btn btn-primary ml1 bg-orange"
+              onClick={ load } disabled={ requestInProgress }>
+              Search
+            </button>
+
+          </div>
+          <div className="p1 bold white bg-orange">
+            Contact info
+          </div>
+
+          { contactInfo }
+
+        </div>
+      </Container>
+    );
+  }
+
+  barcodeChars = [];
+  barcodeLoad = false;
 }
 
 ScannerPage.propTypes = {
-  contactInfo: React.PropTypes.object,
-  loadInfo: React.PropTypes.func,
-  print: React.PropTypes.func,
-  fields: React.PropTypes.object.isRequired,
+  contact: React.PropTypes.object,
+  phone: React.PropTypes.string,
+  requestInProgress: React.PropTypes.bool,
+
+  load: React.PropTypes.func,
+  printContact: React.PropTypes.func,
 };
 
 export default connect(

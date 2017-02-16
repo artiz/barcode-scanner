@@ -17,14 +17,14 @@ const basePlugins = [
   }),
   new webpack.NoErrorsPlugin(),
   new CopyWebpackPlugin([
-    { from: 'src/assets', to: 'assets' },
+    { from: './src/assets', to: 'assets' },
   ]),
 ];
 
 const devPlugins = [
   new StyleLintPlugin({
     configFile: './.stylelintrc',
-    files: ['src/**/*.css'],
+    files: ['./src/**/*.css'],
     failOnError: false,
   }),
 ];
