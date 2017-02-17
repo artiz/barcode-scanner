@@ -102,24 +102,24 @@ class ScannerPage extends React.Component {
     let contactInfo = null;
     if (contact) {
       contactInfo = (
-        <div className="p2 print-area">
+        <div className="p2">
           <p>Name: { contact.name  }</p>
           <p>Phone: { contact.phone }</p>
           <br/>
-          <Button data-ref="print" className="col-2" onClick={ printContact }>Print</Button>
+          <Button data-ref="print" className="col-2 no-print" onClick={ printContact }>Print</Button>
         </div>
       );
     }
 
     return (
       <Container testid="scanner" size={3} center>
-        <h2 data-testid="scanner-heading" className="center" id="qa-counter-heading">Scanner</h2>
+        <h2 data-testid="scanner-heading" className="center no-print" id="qa-counter-heading">Scanner</h2>
 
         <div className="overflow-hidden border rounded">
-          <div className="p1 bold white bg-blue">
+          <div className="p1 bold white bg-blue no-print">
             Search
           </div>
-          <div className="p1">
+          <div className="p1 no-print">
             <input
               type="text"
               className="field col-6"
@@ -130,7 +130,7 @@ class ScannerPage extends React.Component {
               value={ phone }
             />
             <button data-ref="load-info" className="btn btn-primary ml1 bg-orange"
-              onClick={ load } disabled={ requestInProgress }>
+              onClick={ load } disabled={ !phone || requestInProgress }>
               Search
             </button>
 

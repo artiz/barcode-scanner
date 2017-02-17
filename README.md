@@ -1,12 +1,11 @@
-[![Circle CI](https://circleci.com/gh/rangle/react-redux-starter.svg?style=svg)](https://circleci.com/gh/rangle/react-redux-starter) [![Stories in Ready](https://badge.waffle.io/rangle/rangle-starter.png?label=ready&title=Ready)](https://waffle.io/rangle/rangle-starter)
+# Initial requirements
 
-# Technology
-
+### Technology
 - Client: barcode scanner, chrome, react, redux
 - Server: koa, bookshell, postgre, docker, aws
 - Source control: github
 
-# Task description
+### Task description
 
 Logistic software require knowledge about barcode scanner and label printer integrated with different 
 backend technologies such as web services and databases.
@@ -18,4 +17,32 @@ via serial port com, to lookup the contact info such as person name
 
 - The contact should be displayed on the screen and allow user to print directly to a default printer without prompting the printer dialog
 
+# Implementation
 
+App is based on Rangle React-Redux starter
+[![Circle CI](https://circleci.com/gh/rangle/react-redux-starter.svg?style=svg)](https://circleci.com/gh/rangle/react-redux-starter) [![Stories in Ready](https://badge.waffle.io/rangle/rangle-starter.png?label=ready&title=Ready)](https://waffle.io/rangle/rangle-starter)
+
+
+## npm scripts
+
+### Dev
+```bash
+$ npm install
+$ npm run dev
+```
+
+This runs a development mode server with live reload etc.
+
+Open `http://localhost:8080` in your browser.
+
+### Production
+
+```bash
+npm run build
+npm start
+```
+
+This runs a production-ready express server that serves up a bundled and
+minified version of the client.
+
+Open `http://localhost:8080` in your browser.

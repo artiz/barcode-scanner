@@ -1,6 +1,22 @@
+@media print {
+  @page {
+    size: 8cm 12cm;
+    margin: 0;
+    padding: 0;
+  }
 
-.das {
+  body {
+    padding: 2cm;
+  }
 
+  .no-print {
+    display: none !important;
+  }
+
+  a[href]:after { content: none !important; }
+  img[src]:after { content: none !important; }
 }
+
+
 
 

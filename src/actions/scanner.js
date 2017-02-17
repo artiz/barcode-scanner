@@ -32,6 +32,7 @@ export function loadClient() {
 }
 
 export function printInfo() {
+  window.print();
   return {
     type: SCANNER_PRINT_CLIENT,
   };
