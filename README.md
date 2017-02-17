@@ -20,8 +20,7 @@ via serial port com, to lookup the contact info such as person name
 # Implementation
 
 App is based on Rangle React-Redux starter
-[![Circle CI](https://circleci.com/gh/rangle/react-redux-starter.svg?style=svg)](https://circleci.com/gh/rangle/react-redux-starter) [![Stories in Ready](https://badge.waffle.io/rangle/rangle-starter.png?label=ready&title=Ready)](https://waffle.io/rangle/rangle-starter)
-
+[https://github.com/rangle/react-redux-example](https://github.com/rangle/react-redux-example)
 
 ## npm scripts
 
