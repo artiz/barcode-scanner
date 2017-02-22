@@ -1,0 +1,18 @@
+{
+   "app": {
+      "background": {
+         "scripts": [ "main.bundle.js"]
+      }
+   },
+   "description": "Exposes a node-serialport compliant interface to front end javascript",
+   "externally_connectable": {
+    "matches": [ //external websites that can communicate with apps
+      "*://127.0.0.1/*",
+      "*://localhost/*"
+    ]},
+   "manifest_version": 2,
+   "name": "chrome-serialport",
+   "permissions": [ "serial" ],
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "0.0.1"
+}

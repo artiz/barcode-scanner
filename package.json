@@ -107,6 +107,7 @@
   "dependencies": {
     "basscss-base-forms": "^2.0.2",
     "basscss-color-forms": "^3.0.2",
+    "chrome-serialport": "^0.1.2",
     "express": "^4.13.3",
     "helmet": "^2.0.0",
     "http-proxy": "^1.12.1",

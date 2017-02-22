@@ -1,3 +1,4 @@
+import * as SerialPortFactory from 'chrome-serialport';
 import React from 'react';
 import Button from '../components/button';
 // import FormGroup from '../components/form/group';
@@ -9,6 +10,8 @@ import { connect } from 'react-redux';
 import { loadClient, printInfo, storePhone } from '../actions/scanner';
 
 import Container from '../components/container';
+
+const SerialPort = SerialPortFactory.SerialPort;
 
 function mapStateToProps(state) {
   const local = state.scanner;
@@ -44,7 +47,29 @@ class ScannerPage extends React.Component {
     this.phoneInput.focus();
 
     if (this.isDomAvailable) {
+      // HID scanner
       window.addEventListener('keypress', this.onWindowKeyPress);
+
+      // ComScanner integration
+      SerialPortFactory.extensionId = 'ianojeajhgmlpeboogaeajobngdnhlko';
+      if (typeof('chrome') !== 'undefined') {
+        chrome.runtime.sendMessage(SerialPortFactory.extensionId, { op: 'getManifest', 'message': 'ping' },
+          (response) => {
+            if (chrome.runtime.lastError) {
+              return console.log('ERROR:', chrome.runtime.lastError);  // eslint-disable-line no-console
+            }
+
+            if (response && response.error) {
+              return console.log('ERROR:', response.error);  // eslint-disable-line no-console
+            }
+
+            const sp = new SerialPort();
+            console.log('sp:', sp);
+            return console.log('SUCCESS:', response.data);  // eslint-disable-line no-console
+          });
+      } else {
+        console.log('Google Chrome API is not available'); // eslint-disable-line no-console
+      }
     }
   }
 
@@ -54,6 +79,7 @@ class ScannerPage extends React.Component {
     }
   }
 
+  // TODO: move to separate service in production version
   onWindowKeyPress(evt) {
     // Got here: http://www.deadosaurus.com/detect-a-usb-barcode-scanner-with-javascript/
     // check the keys pressed are numbers

@@ -1224,6 +1224,10 @@ braces@^1.8.2:
     preserve "^0.2.0"
     repeat-element "^1.1.2"
 
+browser-serialport@^2.0.1:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/browser-serialport/-/browser-serialport-2.1.0.tgz#fb84077e84b9bbbb84935aae1fcac9ce6105dc7f"
+
 browserify-aes@0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/browserify-aes/-/browserify-aes-0.4.0.tgz#067149b668df31c4b58533e02d01e806d8608e2c"
@@ -1400,6 +1404,12 @@ chokidar@^1.0.0, chokidar@^1.4.1, chokidar@^1.4.3, chokidar@^1.5.1, chokidar@^1.
     readdirp "^2.0.0"
   optionalDependencies:
     fsevents "^1.0.0"
+
+chrome-serialport:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/chrome-serialport/-/chrome-serialport-0.1.2.tgz#a89407473c3d4c011fc1d8a0418d3e3fd5aa8bdf"
+  dependencies:
+    browser-serialport "^2.0.1"
 
 circular-json@^0.3.1:
   version "0.3.1"
