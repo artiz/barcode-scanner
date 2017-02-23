@@ -1,53 +1,42 @@
-/******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
+(function(modules) { // webpackBootstrap
+	// The module cache
+	var installedModules = {};
+	// The require function
+	function __webpack_require__(moduleId) {
+		// Check if module is in cache
+		if(installedModules[moduleId])
+			return installedModules[moduleId].exports;
+		// Create a new module (and put it into the cache)
+		var module = installedModules[moduleId] = {
+			exports: {},
+			id: moduleId,
+			loaded: false
+		};
+		// Execute the module function
+		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+		// Flag the module as loaded
+		module.loaded = true;
+		// Return the exports of the module
+		return module.exports;
+	}
 
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
+	__webpack_require__.m = modules;
+	__webpack_require__.c = installedModules;
+	__webpack_require__.p = "";
+	return __webpack_require__(0);
+})
 
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
-/******/ 			return installedModules[moduleId].exports;
-
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			exports: {},
-/******/ 			id: moduleId,
-/******/ 			loaded: false
-/******/ 		};
-
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
-/******/ 		// Flag the module as loaded
-/******/ 		module.loaded = true;
-
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-
-
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(0);
-/******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/****************** Serial Port integration code ************************/
+([
+function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(Buffer) {/*global chrome, document:false */
+
+(function(Buffer) {/*global chrome, document:false */
 	'use strict';
 
-	var SerialPort = __webpack_require__(5);
+  // browser-serialport
+  var SerialPort = __webpack_require__(5);
 
 	//can't be global
 	var serialPort;
@@ -110,7 +99,6 @@
 
 	//command channel
 	chrome.runtime.onMessageExternal.addListener(function(msg, sender, responder) {
-
 	  console.log(msg);
 
 	  var cmds = {
@@ -184,11 +172,17 @@
 
 	chrome.app.runtime.onLaunched.addListener(function() {
 	  var a = document.createElement('a');
-	  a.href = 'http://127.0.0.1:5555/';
+	  a.href = 'http://127.0.0.1:8080/';
 	  a.target='_blank';
 	  a.click();
 	});
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1).Buffer))
+	}.call(exports, __webpack_require__(1).Buffer))
+
+
+
+
+/****************** Serial Port integration code END ************************/
+/************************************************************************/
 
 /***/ },
 /* 1 */

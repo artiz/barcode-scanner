@@ -1,4 +1,4 @@
-import * as SerialPortFactory from 'chrome-serialport';
+import { SerialPort } from '../utils/chrome-serial-port';
 import React from 'react';
 import Button from '../components/button';
 // import FormGroup from '../components/form/group';
@@ -7,11 +7,9 @@ import Button from '../components/button';
 // import Input from '../components/form/input/';
 import { connect } from 'react-redux';
 
-import { loadClient, printInfo, storePhone } from '../actions/scanner';
+import { loadClient, printInfo, storePhone, storeExtensionId, storePorts } from '../actions/scanner';
 
 import Container from '../components/container';
-
-const SerialPort = SerialPortFactory.SerialPort;
 
 function mapStateToProps(state) {
   const local = state.scanner;
@@ -19,6 +17,8 @@ function mapStateToProps(state) {
     contact: local.get('contact') ? local.get('contact').toJSON() : null,
     requestInProgress: local.get('pending'),
     phone: local.get('phone'),
+    extensionId: local.get('extensionId'),
+    ports: local.get('ports'),
   };
 }
 
@@ -38,8 +38,12 @@ class ScannerPage extends React.Component {
     super(props);
     this.onPhoneKeyPress = this.onPhoneKeyPress.bind(this);
     this.onPhoneChange = this.onPhoneChange.bind(this);
+    this.onExtensionIdChange = this.onExtensionIdChange.bind(this);
+
     this.onWindowKeyPress = this.onWindowKeyPress.bind(this);
     this.isDomAvailable = typeof(window) !== 'undefined';
+
+    this.listPorts = this.listPorts.bind(this);
   }
 
   componentDidMount() {
@@ -49,27 +53,6 @@ class ScannerPage extends React.Component {
     if (this.isDomAvailable) {
       // HID scanner
       window.addEventListener('keypress', this.onWindowKeyPress);
-
-      // ComScanner integration
-      SerialPortFactory.extensionId = 'ianojeajhgmlpeboogaeajobngdnhlko';
-      if (typeof('chrome') !== 'undefined') {
-        chrome.runtime.sendMessage(SerialPortFactory.extensionId, { op: 'getManifest', 'message': 'ping' },
-          (response) => {
-            if (chrome.runtime.lastError) {
-              return console.log('ERROR:', chrome.runtime.lastError);  // eslint-disable-line no-console
-            }
-
-            if (response && response.error) {
-              return console.log('ERROR:', response.error);  // eslint-disable-line no-console
-            }
-
-            const sp = new SerialPort();
-            console.log('sp:', sp);
-            return console.log('SUCCESS:', response.data);  // eslint-disable-line no-console
-          });
-      } else {
-        console.log('Google Chrome API is not available'); // eslint-disable-line no-console
-      }
     }
   }
 
@@ -118,12 +101,21 @@ class ScannerPage extends React.Component {
     this.dispatch(storePhone(this.phoneInput.value));
   }
 
+  onExtensionIdChange() {
+    this.dispatch(storeExtensionId(this.extensionIdInput.value));
+    this.closePort();
+  }
+
   render() {
-    const { contact,
+    const {
+      contact,
       phone,
+      extensionId,
       requestInProgress,
       load,
-      printContact } = this.props;
+      printContact,
+      ports,
+    } = this.props;
 
     let contactInfo = null;
     if (contact) {
@@ -142,6 +134,47 @@ class ScannerPage extends React.Component {
         <h2 data-testid="scanner-heading" className="center no-print" id="qa-counter-heading">Scanner</h2>
 
         <div className="overflow-hidden border rounded">
+          <div className="p1 bold white bg-blue no-print">
+            COM port setup
+          </div>
+          <div className="p1 no-print">
+            <p>
+              Setup registered extension id from <a href="chrome://extensions/" target="_blank">chrome://extensions/</a>.
+              Extension must be loaded manully (demo mode) from <i>barcode-scanner/extension/</i> folder in app folder.
+              Its name is 'dicom-chrome-serialport';
+            </p>
+            <input
+              type="text"
+              className="field col-6"
+              ref={(input) => { this.extensionIdInput = input; }}
+              onChange = { this.onExtensionIdChange  }
+              placeholder="Enter extension id"
+              value={ extensionId }
+            />
+            <button data-ref="load-info" className="btn btn-primary ml1 bg-orange"
+              onClick={ this.listPorts } disabled={ !extensionId }>
+              List Ports
+            </button>
+
+            {ports && ports.length ?
+              <div>
+                <label className="label">Ports: </label>
+                <select className="field col-6">
+                  {
+                    ports.map((port) => {
+                      return <option value={port.comName}>{`${port.comName}: ${port.manufacturer}`}</option>;
+                    })
+                  }
+                </select>
+                <button data-ref="load-info" className="btn btn-primary ml1 bg-blue"
+                  onClick={ this.connectPort }>
+                  Connect
+                </button>
+              </div> : null
+            }
+
+          </div>
+
           <div className="p1 bold white bg-blue no-print">
             Search
           </div>
@@ -172,6 +205,47 @@ class ScannerPage extends React.Component {
     );
   }
 
+  connectScanner() {
+    // ComScanner integration
+    return SerialPort.isInstalled(this.props.extensionId);
+  }
+
+  listPorts() {
+    this.connectScanner().then(res => {
+      console.log('Scanner connected', res);
+      return SerialPort.listSerialPorts();
+    }).then(ports => {
+      console.log('Loaded ports', ports);
+      // this.serialPort = new SerialPort();
+      this.dispatch(storePorts(ports));
+    }).catch(err => {
+      this.showSerialPortError(err);
+    });
+  }
+
+  closePort() {
+    if (this.serialPort) {
+      this.dispatch(storePorts([]));
+      return this.serialPort.then(() => {
+        this.serialPort = null;
+      }).catch(err => {
+        this.showSerialPortError(err);
+      });
+    }
+
+    return Promise.resolve(true);
+  }
+
+  showSerialPortError(err) {
+    console.log('COM error', err);
+    alert(err && err.message ? err.message : (error || 'COM interaction error'));
+  }
+
+  connectPort() {
+    alert('Work in progress');
+  }
+
+  serialPort = null;
   barcodeChars = [];
   barcodeLoad = false;
 }
@@ -179,6 +253,8 @@ class ScannerPage extends React.Component {
 ScannerPage.propTypes = {
   contact: React.PropTypes.object,
   phone: React.PropTypes.string,
+  extensionId: React.PropTypes.string,
+  ports: React.PropTypes.array,
   requestInProgress: React.PropTypes.bool,
 
   load: React.PropTypes.func,
@@ -189,3 +265,4 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(ScannerPage);
+

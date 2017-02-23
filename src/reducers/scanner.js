@@ -3,14 +3,19 @@ import { SCANNER_LOAD_INFO_PENDING,
   SCANNER_LOAD_INFO_ERROR,
   SCANNER_PRINT_CLIENT,
   SCANNER_STORE_PHONE,
-  LOGOUT_USER } from '../constants';
+  SCANNER_STORE_EXTENSION_ID,
+  SCANNER_STORE_PORTS,
+  LOGOUT_USER,
+} from '../constants';
 import { fromJS } from 'immutable';
 
 const INITIAL_STATE = fromJS({
   contact: null,
   phone: '',
+  extensionId: 'ianojeajhgmlpeboogaeajobngdnhlko',
   error: null,
   pending: false,
+  ports: [],
 });
 
 function scannerReducer(state = INITIAL_STATE, action = {}) {
@@ -36,6 +41,12 @@ function scannerReducer(state = INITIAL_STATE, action = {}) {
 
   case SCANNER_STORE_PHONE:
     return state.update('phone', () => action.payload || '' );
+
+  case SCANNER_STORE_EXTENSION_ID:
+    return state.update('extensionId', () => action.payload || '' );
+
+  case SCANNER_STORE_PORTS:
+    return state.update('ports', () => action.payload || [] );
 
   case SCANNER_PRINT_CLIENT:
     return state;
