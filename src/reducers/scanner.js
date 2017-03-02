@@ -46,7 +46,7 @@ function scannerReducer(state = INITIAL_STATE, action = {}) {
     return state.update('extensionId', () => action.payload || '' );
 
   case SCANNER_STORE_PORTS:
-    return state.update('ports', () => action.payload || [] );
+    return state.update('ports', () => fromJS(action.payload || []) );
 
   case SCANNER_PRINT_CLIENT:
     return state;

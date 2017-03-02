@@ -32,4 +32,7 @@
 @import 'basscss-color-forms';
 
 /* App */
-@import './print.scss';
+@import './print.css';
+@import './animation.css';
+
+

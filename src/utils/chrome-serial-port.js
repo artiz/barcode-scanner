@@ -55,11 +55,12 @@ util.inherits(SerialPort, EventEmitter);
 
 //always open immediately
 SerialPort.prototype.open = function (callback) {
-  if(!callback) { callback = function () {}; }
+  if(!callback) {
+    callback = function () {}; }
 
   var self = this;
 
-  chrome.runtime.sendMessage(SerialPort.extensionId, {op: 'open'},
+  chrome.runtime.sendMessage(SerialPort.extensionId, { op: 'open' },
     function(response) {
       if(chrome.runtime.lastError){
         return callback(chrome.runtime.lastError);

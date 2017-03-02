@@ -1,0 +1,5 @@
+
+.anim-height {
+  height: auto;
+  transition: opacity, height 1s;
+}

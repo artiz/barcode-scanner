@@ -13,12 +13,13 @@ import Container from '../components/container';
 
 function mapStateToProps(state) {
   const local = state.scanner;
+
   return {
     contact: local.get('contact') ? local.get('contact').toJSON() : null,
     requestInProgress: local.get('pending'),
     phone: local.get('phone'),
     extensionId: local.get('extensionId'),
-    ports: local.get('ports'),
+    ports: local.get('ports').toJS(),
   };
 }
 
@@ -44,6 +45,8 @@ class ScannerPage extends React.Component {
     this.isDomAvailable = typeof(window) !== 'undefined';
 
     this.listPorts = this.listPorts.bind(this);
+    this.connectPort = this.connectPort.bind(this);
+    this.onSerialBarcode = this.onSerialBarcode.bind(this);
   }
 
   componentDidMount() {
@@ -53,6 +56,10 @@ class ScannerPage extends React.Component {
     if (this.isDomAvailable) {
       // HID scanner
       window.addEventListener('keypress', this.onWindowKeyPress);
+
+      if (this.props.connectedPort) {
+        console.log('Reconnect to ', this.props.connectedPort);
+      }
     }
   }
 
@@ -62,34 +69,9 @@ class ScannerPage extends React.Component {
     }
   }
 
-  // TODO: move to separate service in production version
   onWindowKeyPress(evt) {
-    // Got here: http://www.deadosaurus.com/detect-a-usb-barcode-scanner-with-javascript/
-    // check the keys pressed are numbers
-    if (evt.which >= 48 && evt.which <= 57) {
-      // if a number is pressed we add it to the chars array
-      this.barcodeChars.push(String.fromCharCode(evt.which));
-    }
-    // console.log('onWindowKeyPress:', evt.which);
-
-    if (this.barcodeLoad === false) {
-      setTimeout(() => {
-        // check we have a long length e.g. it is a barcode
-        if (this.barcodeChars.length >= 10) {
-          const barcode = this.barcodeChars.join('').trim();
-          // console.log('Barcode:', barcode);
-          this.dispatch(storePhone(barcode));
-          this.dispatch(loadClient());
-        }
-
-        this.barcodeChars = [];
-        this.barcodeLoad = false;
-      }, 500);
-    }
-
-    this.barcodeLoad = true;
+    this.loadBarcodeChar(evt.which);
   }
-
 
   onPhoneKeyPress(evt) {
     if (evt.key === 'Enter') {
@@ -103,7 +85,22 @@ class ScannerPage extends React.Component {
 
   onExtensionIdChange() {
     this.dispatch(storeExtensionId(this.extensionIdInput.value));
-    this.closePort();
+    this.closePort().then(() => {
+      this.dispatch(storePorts([]));
+    });
+  }
+
+  onBarcodeRead(barcode) {
+    this.dispatch(storePhone(barcode));
+    this.dispatch(loadClient());
+  }
+
+  onSerialBarcode(data) {
+    if (data.length) {
+      for (const byte of data) {
+        this.loadBarcodeChar(byte);
+      }
+    }
   }
 
   render() {
@@ -115,7 +112,12 @@ class ScannerPage extends React.Component {
       load,
       printContact,
       ports,
+      connectedPort,
     } = this.props;
+
+    const {
+      errorMessage,
+    } = this.state || {};
 
     let contactInfo = null;
     if (contact) {
@@ -131,6 +133,13 @@ class ScannerPage extends React.Component {
 
     return (
       <Container testid="scanner" size={3} center>
+        {errorMessage ?
+           <div className="p1 mt2 bg-orange border rounded anim-height">
+            <h1 className="h2 mt0">Error</h1>
+            <p className="mb0">{errorMessage}</p>
+          </div>
+           : null
+        }
         <h2 data-testid="scanner-heading" className="center no-print" id="qa-counter-heading">Scanner</h2>
 
         <div className="overflow-hidden border rounded">
@@ -151,6 +160,7 @@ class ScannerPage extends React.Component {
               placeholder="Enter extension id"
               value={ extensionId }
             />
+
             <button data-ref="load-info" className="btn btn-primary ml1 bg-orange"
               onClick={ this.listPorts } disabled={ !extensionId }>
               List Ports
@@ -159,10 +169,13 @@ class ScannerPage extends React.Component {
             {ports && ports.length ?
               <div>
                 <label className="label">Ports: </label>
-                <select className="field col-6">
+                <select className="field col-6"
+                  ref={(input) => { this.portSelect = input; }}
+                >
                   {
                     ports.map((port) => {
-                      return <option value={port.comName}>{`${port.comName}: ${port.manufacturer}`}</option>;
+                      return (<option selected={connectedPort === port.comName ? 'true' : null}
+                        value={port.comName} key={port.comName}>{`${port.comName}: ${port.manufacturer}`}</option>);
                     })
                   }
                 </select>
@@ -205,19 +218,45 @@ class ScannerPage extends React.Component {
     );
   }
 
-  connectScanner() {
+  loadBarcodeChar(char) {
+    // Got here: http://www.deadosaurus.com/detect-a-usb-barcode-scanner-with-javascript/
+    // check the keys pressed are numbers
+    if (char >= 48 && char <= 57) {
+      // if a number is pressed we add it to the chars array
+      this.barcodeChars.push(String.fromCharCode(char));
+    }
+    // console.log('onWindowKeyPress:', char);
+
+    if (this.barcodeLoad === false) {
+      setTimeout(() => {
+        // check we have a long length e.g. it is a barcode
+        if (this.barcodeChars.length >= 8) {
+          const barcode = this.barcodeChars.join('').trim();
+          // console.log('Barcode:', barcode);
+          this.onBarcodeRead(barcode);
+        }
+
+        this.barcodeChars = [];
+        this.barcodeLoad = false;
+      }, 500);
+    }
+
+    this.barcodeLoad = true;
+  }
+
+  connectExtension() {
     // ComScanner integration
     return SerialPort.isInstalled(this.props.extensionId);
   }
 
   listPorts() {
-    this.connectScanner().then(res => {
+    this.setState({ errorMessage: '' });
+    this.connectExtension().then(res => {
       console.log('Scanner connected', res);
       return SerialPort.listSerialPorts();
     }).then(ports => {
       console.log('Loaded ports', ports);
-      // this.serialPort = new SerialPort();
-      this.dispatch(storePorts(ports));
+      this.dispatch(storePorts(ports || []));
     }).catch(err => {
       this.showSerialPortError(err);
     });
@@ -225,8 +264,7 @@ class ScannerPage extends React.Component {
 
   closePort() {
     if (this.serialPort) {
-      this.dispatch(storePorts([]));
-      return this.serialPort.then(() => {
+      return this.serialPort.close().then(() => {
         this.serialPort = null;
       }).catch(err => {
         this.showSerialPortError(err);
@@ -238,11 +276,21 @@ class ScannerPage extends React.Component {
 
   showSerialPortError(err) {
     console.log('COM error', err);
-    alert(err && err.message ? err.message : (error || 'COM interaction error'));
+    const errorMessage = err && err.message ? err.message : (error || 'COM interaction error');
+    this.setState({ errorMessage });
   }
 
   connectPort() {
-    alert('Work in progress');
+    console.log(this.extensionIdInput, this.portSelect);
+    const path = this.portSelect.value;
+
+    this.closePort().then(()=> {
+      // this.connectedPort
+      this.serialPort = new SerialPort(path);
+      this.serialPort.on('data', this.onSerialBarcode);
+    }).catch(err => {
+      this.showSerialPortError(err);
+    });
   }
 
   serialPort = null;
@@ -255,6 +303,7 @@ ScannerPage.propTypes = {
   phone: React.PropTypes.string,
   extensionId: React.PropTypes.string,
   ports: React.PropTypes.array,
+  connectedPort: React.PropTypes.string,
   requestInProgress: React.PropTypes.bool,
 
   load: React.PropTypes.func,
